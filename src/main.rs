@@ -9,17 +9,71 @@ fn main() -> iced::Result {
         .run_with(App::new)
 }
 
-pub struct App { }
+pub struct App {
+    path_file: String,
+    store_file: String,
+    rl2_path: String,
+    store: Option<Store>,
+    stores: widget::combo_box::State<Store>
+}
+
+#[derive(Debug, Clone)]
+pub enum Store {
+    EpicGames,
+    Steam
+}
+
+impl std::fmt::Display for Store {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Store::EpicGames => "Epic Games Store",
+            Store::Steam => "Steam"
+        })
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum Event {
-    Titlebar(TitlebarEvent)
+    Titlebar(TitlebarEvent),
+    PathChanged(String),
+    StoreChanged(Store),
+    InfoProvided
 }
 
 impl App {
     pub fn new() -> (App, Task<Event>) {
+        let mut rl2_path = "".to_string();
+        let mut store = None;
+
+        let current_dir = std::env::current_dir().expect("Huh").display().to_string();
+
+        let path_file = current_dir.clone() + "/path.saved";
+        let store_file = current_dir.clone() + "/store.saved";
+
+        if let Ok(content) = std::fs::read_to_string(&path_file) {
+            rl2_path = content;            
+        }
+
+        if let Ok(content) = std::fs::read_to_string(&store_file) {
+            if content == "Epic Games Store" {
+                store = Some(Store::EpicGames);
+            }
+            else {
+                store = Some(Store::Steam);
+            }
+        }
+
         (
-            App { },
+            App { 
+                path_file,
+                store_file,
+                rl2_path, 
+                store, 
+                stores: widget::combo_box::State::<Store>::new(vec![
+                    Store::EpicGames,
+                    Store::Steam
+                ])
+            },
             window::get_latest().and_then(move |id| {
                 window::maximize(id, true)
             })
@@ -41,6 +95,17 @@ impl App {
                     window::close(id) 
                 }),
             },
+            Event::PathChanged(new_path) => {
+                self.rl2_path = new_path.clone();
+                let _ = std::fs::write(self.path_file.clone(), new_path);
+                Task::none()
+            },
+            Event::StoreChanged(store) => {
+                self.store = Some(store.clone());
+                let _ = std::fs::write(self.store_file.clone(), format!("{}", store));
+                Task::none()
+            }
+            _ => todo!()
         }
     }
 
@@ -51,8 +116,15 @@ impl App {
                 widget::button("_").on_press(Event::Titlebar(TitlebarEvent::Hide)),
                 widget::button("[_]").on_press(Event::Titlebar(TitlebarEvent::Maximize)),
                 widget::button("X").on_press(Event::Titlebar(TitlebarEvent::Close)),
-            ].width(iced::Length::Fill)
-        ].into()
+            ].width(iced::Length::Fill).padding(iced::Padding { top: 0.0, right: 0.0, left: 5.0, bottom: 0.0 }),
+
+            widget::row![
+                widget::text_input("Rogue Legacy 2 installation path...", &self.rl2_path).on_input(Event::PathChanged).width(iced::Length::FillPortion(8)),
+                widget::combo_box(&self.stores, "Select store", self.store.as_ref(), Event::StoreChanged),
+                widget::button("Vanilla"),
+                widget::button("Modded")
+            ].width(iced::Length::Fill).padding(iced::Padding { top: 15.0, right: 0.0, left: 0.0, bottom: 0.0 }).spacing(5)
+        ].padding(iced::Padding { top: 5.0, right: 5.0, left: 5.0, bottom: 0.0 }).into()
     }
 }
 
