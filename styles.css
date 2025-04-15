@@ -1,0 +1,51 @@
+:root {
+    --background: #080904;
+    --background-semi: #08090488;
+    --background-quarter: #08090444;
+    --background-light: #08280A;
+    --primary: #bcd16d;
+    --secondary: #6eC421;
+    --accent: #c2e150;
+    --text: #d3d3d3
+}
+
+html {
+    background-image: linear-gradient(60deg, var(--background) 10%, var(--background-light));
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    font-family: monospace;
+    
+    min-height: 100%;
+    height: auto;
+
+    padding: 0px;
+}
+
+body {
+    margin: 0px 8px;
+}
+
+#titlebar {
+    background-color: var(--background-semi);
+    
+    color: var(--text);
+    font-size: 14px;
+    
+    display: flex;
+    flex-direction: row;
+
+    margin: 3px 0px;
+    padding: 4px 8px;
+
+    border-radius: 5px;
+
+    justify-content: space-between;
+    align-content: center;
+
+    button {
+        color: var(--text);
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+    }
+}
