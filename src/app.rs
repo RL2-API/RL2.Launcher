@@ -77,12 +77,13 @@ pub fn Content() -> impl IntoView {
 
     let update_rl2_path = move |ev| {
         let v = event_target_value(&ev);
+        set_mod_list.set(Vec::new());
         task::spawn_local(async move {
             if let Ok(json) = serde_wasm_bindgen::to_value(&PathArgs { path: v.to_string() }) { 
                 if invoke("check_if_correct_path", json.clone()).await == JsValue::TRUE {
                     set_rl2_path.set(v.to_string());
                     if let Ok(mods) = serde_wasm_bindgen::from_value(invoke("get_mod_list", json).await) {
-                        set_mod_list.set(mods)
+                        set_mod_list.set(mods);
                     }
                 }
             }
@@ -91,7 +92,20 @@ pub fn Content() -> impl IntoView {
 
     let launch_modded = move |_ev| {
         log(rl2_path.get());
+        log("awoogs".to_string());
     };
+
+    
+    task::spawn_local(async move {
+        if let Ok(Some(saved_path)) = serde_wasm_bindgen::from_value::<Option<String>>(invoke("get_saved_path", JsValue::default()).await) {
+            if let Ok(json) = serde_wasm_bindgen::to_value(&PathArgs { path: saved_path.clone() }) { 
+                set_rl2_path.set(saved_path);
+                if let Ok(mods) = serde_wasm_bindgen::from_value(invoke("get_mod_list", json).await) {
+                    set_mod_list.set(mods);
+                }
+            }
+        }
+    });
 
     view! {
         <div id="modlist">
@@ -118,6 +132,7 @@ pub fn Content() -> impl IntoView {
                 id="rl2_path"
                 placeholder="RL2 installation path"
                 on:input=update_rl2_path
+                value=rl2_path
             />
             <button id="modded" on:click=launch_modded>Modded</button>
             <button id="vanilla">Vanilla</button>

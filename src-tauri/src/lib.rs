@@ -1,4 +1,6 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+use tauri::Manager;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -9,6 +11,7 @@ pub fn run() {
             maximize_window,
             drag_window,
             check_if_correct_path,
+            get_saved_path,
             get_mod_list
         ])
         .run(tauri::generate_context!())
@@ -40,14 +43,32 @@ fn drag_window(window: tauri::Window) {
     let _ = window.start_dragging();
 }
 
-
 #[tauri::command]
-fn check_if_correct_path(path: String) -> bool {
-    if let Ok(exists) = std::fs::exists(path + "/Rogue Legacy 2.exe") {
+fn check_if_correct_path(window: tauri::Window, path: String) -> bool {
+    if let Ok(exists @ true) = std::fs::exists(path.clone() + "/Rogue Legacy 2.exe") {
+        if let Ok(local_maybe) = window.path().local_data_dir() {
+            if let Some(local) = local_maybe.to_str() {
+                let _ = std::fs::write(local.to_string() + "/path.saved", path);
+            }
+        }
+
         return exists;
     }
 
     false
+}
+
+#[tauri::command]
+fn get_saved_path(window: tauri::Window) -> Option<String> {
+    if let Ok(local_maybe) = window.path().local_data_dir() {
+       if let Some(local) = local_maybe.to_str() {
+            if let Ok(path) = std::fs::read_to_string(local.to_string() + "/path.saved") {
+                return Some(path);
+            }
+       }
+    }
+    
+    None
 }
 
 #[tauri::command]
