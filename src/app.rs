@@ -70,6 +70,12 @@ struct PathArgs {
     path: String
 }
 
+#[derive(serde::Serialize, serde::Deserialize)]
+struct LaunchArgs {
+    path: String,
+    modded: bool
+} 
+
 #[component]
 pub fn Content() -> impl IntoView {
     let (rl2_path, set_rl2_path) = signal(String::new());
@@ -91,11 +97,21 @@ pub fn Content() -> impl IntoView {
     };
 
     let launch_modded = move |_ev| {
-        log(rl2_path.get());
-        log("awoogs".to_string());
+        task::spawn_local(async move {
+            if let Ok(json) = serde_wasm_bindgen::to_value(&LaunchArgs { path: rl2_path.get_untracked(), modded: true }) {
+                invoke("launch_game", json).await;
+            }
+        })
+    };
+ 
+    let launch_vanilla = move |_ev| {
+        task::spawn_local(async move {
+            if let Ok(json) = serde_wasm_bindgen::to_value(&LaunchArgs { path: rl2_path.get_untracked(), modded: false }) {
+                invoke("launch_game", json).await;
+            }
+        })
     };
 
-    
     task::spawn_local(async move {
         if let Ok(Some(saved_path)) = serde_wasm_bindgen::from_value::<Option<String>>(invoke("get_saved_path", JsValue::default()).await) {
             if let Ok(json) = serde_wasm_bindgen::to_value(&PathArgs { path: saved_path.clone() }) { 
@@ -135,7 +151,7 @@ pub fn Content() -> impl IntoView {
                 value=rl2_path
             />
             <button id="modded" on:click=launch_modded>Modded</button>
-            <button id="vanilla">Vanilla</button>
+            <button id="vanilla" on:click=launch_vanilla>Vanilla</button>
         </div>
     }
 }
