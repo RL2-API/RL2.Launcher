@@ -30,9 +30,18 @@ pub fn Titlebar() -> impl IntoView {
         });
     };
     
+    let drag = move |_ev| {
+        task::spawn_local(async move {
+            invoke("drag_window", JsValue::default()).await;
+        });
+    };
+
     view! {
         <nav id="titlebar">
-            { move || name }
+            <img src="public/icon.png" width="30" />
+            <button id="title" on:mousedown=drag>
+                { move || name }
+            </button>    
             <div>
                 <button on:click=hide>_</button>
                 <button on:click=toggle_maximize>[_]</button>
@@ -44,20 +53,26 @@ pub fn Titlebar() -> impl IntoView {
 
 #[component]
 pub fn App() -> impl IntoView {
-    let (name, set_name) = signal(String::new());
+    let (rl2_path, set_rl2_path) = signal(String::new());
 
-    let update_name = move |ev| {
+    let update_rl2_path = move |ev| {
         let v = event_target_value(&ev);
-        set_name.set(v);
+        set_rl2_path.set(v);
     };
 
     view! {
         <main class="container">
-            <input
-                id="rl2_path"
-                placeholder="RL2 installation path"
-                on:input=update_name
-            />
+            <div id="sidebar">
+                <input
+                    id="rl2_path"
+                    placeholder="RL2 installation path"
+                    on:input=update_rl2_path
+                />
+                <div>
+                    <button id="modded">Modded</button>
+                    <button id="vanilla">Vanilla</button>
+                </div>
+            </div>
         </main>
     }
 }
