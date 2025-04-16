@@ -22,7 +22,16 @@ html {
 }
 
 body {
+    display: flex;
+    flex-direction: column;
     margin: 0px 8px;
+    height: 99vh;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 #titlebar {
@@ -60,22 +69,20 @@ body {
     }
 }
 
-#sidebar {
-    width: 25%;
+#modlist {
+    color: var(--text);
+    height: 95%;
+    overflow: auto;
+    overflow-x: clip;
+}
+
+#launchbar {
+    width: 100%;
     background-color: var(--background-semi);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    padding: 8px 5px;
-    
-    div {
-        margin: 5px 0px;
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-evenly;
-    }
+    justify-content: space-evenly;
 }
 
 #rl2_path {
@@ -83,11 +90,12 @@ body {
     background: rgb(31, 32, 35);
     border: 1px solid rgb(60, 63, 68);
     border-radius: 4px;
-    font-size: 13px;
+    font-size: 15px;
     appearance: none;
     transition: border 0.5s ease 0s;
     color: var(--text);
-    width: 93%;
+    height: 31px;
+    width: 80%;
 
     :focus{
         outline: none;
@@ -102,19 +110,16 @@ body {
     cursor: pointer;
     border: 1px solid #007a5a;
     color: #007a5a;
-    border-color: ;
-    font-weight: 700;
-    background: var(--text);
-    padding: 8px;
+    font-weight: 900;
+    line-height: 1.2rem;
+    background-color: var(--text);
+    padding: 8px 14px 9px;
     font-size: 15px;
     border-radius: 4px;
     height: 36px;
     transition: all 80ms linear;
-    width: 47%;
-    
-    :hover{
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 8%);
-    }
+    min-width: 110px;
+    width: 10%;
 }
 
 #modded {
@@ -131,9 +136,6 @@ body {
     color: var(--text);
     height: 36px;
     transition: all 75ms ease-in-out;
-    width: 47%;
-
-    :hover{
-        box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
-    }
+    min-width: 110px;
+    width: 10%;
 }
