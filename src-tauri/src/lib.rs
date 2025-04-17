@@ -51,7 +51,7 @@ fn check_if_correct_path(window: tauri::Window, path: String) -> bool {
     if let Ok(exists @ true) = std::fs::exists(path.clone() + "/Rogue Legacy 2.exe") {
         if let Ok(local_maybe) = window.path().local_data_dir() {
             if let Some(local) = local_maybe.to_str() {
-                let _ = std::fs::write(local.to_string() + "/path.saved", path);
+                let _ = std::fs::write(local.to_string() + "/com.rl2-launcher.app/path.saved", path);
             }
         }
 
@@ -65,7 +65,7 @@ fn check_if_correct_path(window: tauri::Window, path: String) -> bool {
 fn get_saved_path(window: tauri::Window) -> Option<String> {
     if let Ok(local_maybe) = window.path().local_data_dir() {
        if let Some(local) = local_maybe.to_str() {
-            if let Ok(path) = std::fs::read_to_string(local.to_string() + "/path.saved") {
+            if let Ok(path) = std::fs::read_to_string(local.to_string() + "/com.rl2-launcher.app/path.saved") {
                 return Some(path);
             }
        }
@@ -129,7 +129,7 @@ fn launch_epic() {
                 "/C",
                 "start", 
                 "",
-                "com.epicgames.launcher://apps/4966d5da285c4f2c876937844b0e23ee%3Af5d84259a95a4b11ade74a7e4e0bde66%3Abd35425c9548494082d002f36601ff45?action=launch&silent=true"
+                "\"com.epicgames.launcher://apps/4966d5da285c4f2c876937844b0e23ee%3Af5d84259a95a4b11ade74a7e4e0bde66%3Abd35425c9548494082d002f36601ff45?action=launch&silent=true\""
             ])
             .spawn();
     }
