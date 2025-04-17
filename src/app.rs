@@ -52,13 +52,15 @@ pub fn Titlebar() -> impl IntoView {
 
     let update_modloader = move |_ev| {
         task::spawn_local(async move {
-            // invoke("update_modloader", JsValue::default()).await;
+            invoke("update_modloader", JsValue::default()).await;
         });
     };
 
     view! {
         <nav id="titlebar">
-            <img src="public/icon.png" width="30" on:click=update_modloader />
+            <button on:click=update_modloader >
+                <img src="public/icon.png" width="30" />
+            </button>
             <button id="title" on:mousedown=drag>
                 { move || name }
             </button>    

@@ -15,7 +15,8 @@ pub fn run() {
             get_saved_path,
             launch_game,
             get_mod_list,
-            get_enabled_mods_list
+            get_enabled_mods_list,
+            update_modloader
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -107,7 +108,7 @@ fn launch_game(path: String, modded: bool, enabled: std::collections::HashSet::<
         },
         false => {
             let _ = std::fs::write(path.clone() + "/Rogue Legacy 2_Data/RuntimeInitializeOnLoads.json", consts::VANILLA_RIOL_JSON.to_string());
-            let _ = std::fs::write(path.clone() + "/Rogue Legacy ScriptingAssemblies.json", consts::VANILLA_SA_JSON.to_string());
+            let _ = std::fs::write(path.clone() + "/Rogue Legacy 2_Data/ScriptingAssemblies.json", consts::VANILLA_SA_JSON.to_string());
         }
     }
 
@@ -151,4 +152,24 @@ async fn get_mod_list(path: String) -> std::vec::Vec::<String> {
         .map(|f| std::fs::read_to_string(f.path()))
         .filter_map(Result::ok)
         .collect()
+}
+
+#[tauri::command]
+async fn update_modloader(widnow: tauri::Window) {
+    if cfg!(target_os = "windows") {
+        let _ = std::process::Command::new("cmd")
+            .arg("/C")
+            .arg("curl -OL \"https://github.com/RL2-API/RL2.ModLoader/releases/latest/download/RL2.ModLoader.zip\"")
+            .output();
+
+        let _ = std::process::Command::new("cmd")
+            .arg("/C")
+            .arg("tar -xf \"RL2.ModLoader.zip\" -C rl2-ml")
+            .output();
+        /*
+        std::process::Command::new("cmd")
+            .arg("/C")
+            .arg()
+        */
+    }
 }
