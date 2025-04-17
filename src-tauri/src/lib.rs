@@ -14,7 +14,8 @@ pub fn run() {
             check_if_correct_path,
             get_saved_path,
             launch_game,
-            get_mod_list
+            get_mod_list,
+            get_enabled_mods_list
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -73,11 +74,36 @@ fn get_saved_path(window: tauri::Window) -> Option<String> {
 }
 
 #[tauri::command]
-fn launch_game(path: String, modded: bool) {
+fn get_enabled_mods_list(path: String) -> Vec<String> {
+    if let Ok(contents) = std::fs::read_to_string(path + "/Rogue Legacy 2_Data/Mods/enabled.json") {
+        if let Ok(enabled_json) = serde_json::from_str::<EnabledModsJson>(contents.as_str()) {
+            return enabled_json.enabled;
+        }
+    }
+    std::vec::Vec::<String>::new()
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+struct EnabledModsJson {
+    #[serde(rename = "Enabled")]
+    enabled: std::vec::Vec::<String>,
+    #[allow(dead_code)]
+    #[serde(rename = "Disabled")]
+    disabled: std::vec::Vec::<String>
+}
+
+#[tauri::command]
+fn launch_game(path: String, modded: bool, enabled: std::collections::HashSet::<String>, disabled: std::collections::HashSet::<String>) {
     match modded {
         true => {
             let _ = std::fs::write(path.clone() + "/Rogue Legacy 2_Data/RuntimeInitializeOnLoads.json", consts::MODDED_RIOL_JSON.to_string());
-            let _ = std::fs::write(path.clone() + "/Rogue Legacy ScriptingAssemblies.json", consts::MODDED_SA_JSON.to_string());
+            let _ = std::fs::write(path.clone() + "/Rogue Legacy 2_Data/ScriptingAssemblies.json", consts::MODDED_SA_JSON.to_string());
+            if let Ok(json) = serde_json::to_string(&EnabledModsJson { 
+                enabled: enabled.into_iter().collect::<std::vec::Vec<String>>(), 
+                disabled: disabled.into_iter().collect::<std::vec::Vec<String>>(), 
+            }) {
+                let _ = std::fs::write(path.clone() + "/Rogue Legacy 2_Data/Mods/enabled.json", json);
+            }
         },
         false => {
             let _ = std::fs::write(path.clone() + "/Rogue Legacy 2_Data/RuntimeInitializeOnLoads.json", consts::VANILLA_RIOL_JSON.to_string());
@@ -107,24 +133,6 @@ fn launch_epic() {
             ])
             .spawn();
     }
-    /*
-    else if cfg!(target_os = "macos") {
-        let _ = std::process::Command::new("sh")
-            .args([
-                "open", 
-                "com.epicgames.launcher://apps/4966d5da285c4f2c876937844b0e23ee%3Af5d84259a95a4b11ade74a7e4e0bde66%3Abd35425c9548494082d002f36601ff45?action=launch&silent=true"
-            ])
-            .spawn();
-    }
-    else {
-        let _ = std::process::Command::new("sh")
-            .args([
-                "xdg-open", 
-                "com.epicgames.launcher://apps/4966d5da285c4f2c876937844b0e23ee%3Af5d84259a95a4b11ade74a7e4e0bde66%3Abd35425c9548494082d002f36601ff45?action=launch&silent=true"
-            ])
-            .spawn();
-    }
-    */
 }
 
 fn launch_steam(path: String) {

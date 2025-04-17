@@ -50,13 +50,19 @@ pub fn Titlebar() -> impl IntoView {
         });
     };
 
+    let update_modloader = move |_ev| {
+        task::spawn_local(async move {
+            // invoke("update_modloader", JsValue::default()).await;
+        });
+    };
+
     view! {
         <nav id="titlebar">
-            <img src="public/icon.png" width="30" />
+            <img src="public/icon.png" width="30" on:click=update_modloader />
             <button id="title" on:mousedown=drag>
                 { move || name }
             </button>    
-            <div>
+            <div id="buttons">
                 <button on:click=hide>_</button>
                 <button on:click=toggle_maximize>[_]</button>
                 <button on:click=close>"❌"</button>
@@ -73,13 +79,17 @@ struct PathArgs {
 #[derive(serde::Serialize, serde::Deserialize)]
 struct LaunchArgs {
     path: String,
-    modded: bool
+    modded: bool,
+    enabled: std::collections::HashSet<String>,
+    disabled: std::collections::HashSet<String>
 } 
 
 #[component]
 pub fn Content() -> impl IntoView {
     let (rl2_path, set_rl2_path) = signal(String::new());
     let (mod_list, set_mod_list) = signal(std::vec::Vec::<String>::new());
+    let (enabled, set_enabled) = signal(std::collections::HashSet::<String>::new());
+    let (disabled, set_disabled) = signal(std::collections::HashSet::<String>::new());
 
     let update_rl2_path = move |ev| {
         let v = event_target_value(&ev);
@@ -98,7 +108,12 @@ pub fn Content() -> impl IntoView {
 
     let launch_modded = move |_ev| {
         task::spawn_local(async move {
-            if let Ok(json) = serde_wasm_bindgen::to_value(&LaunchArgs { path: rl2_path.get_untracked(), modded: true }) {
+            if let Ok(json) = serde_wasm_bindgen::to_value(&LaunchArgs { 
+                path: rl2_path.get(), 
+                modded: true, 
+                enabled: enabled.get(),
+                disabled: disabled.get()
+            }) {
                 invoke("launch_game", json).await;
             }
         })
@@ -106,18 +121,38 @@ pub fn Content() -> impl IntoView {
  
     let launch_vanilla = move |_ev| {
         task::spawn_local(async move {
-            if let Ok(json) = serde_wasm_bindgen::to_value(&LaunchArgs { path: rl2_path.get_untracked(), modded: false }) {
+            if let Ok(json) = serde_wasm_bindgen::to_value(&LaunchArgs { 
+                path: rl2_path.get_untracked(), 
+                modded: false, 
+                enabled:  std::collections::HashSet::<String>::new(),
+                disabled:  std::collections::HashSet::<String>::new()
+            }) {
                 invoke("launch_game", json).await;
             }
         })
     };
-
+    
+    // Load saved data
     task::spawn_local(async move {
         if let Ok(Some(saved_path)) = serde_wasm_bindgen::from_value::<Option<String>>(invoke("get_saved_path", JsValue::default()).await) {
             if let Ok(json) = serde_wasm_bindgen::to_value(&PathArgs { path: saved_path.clone() }) { 
                 set_rl2_path.set(saved_path);
-                if let Ok(mods) = serde_wasm_bindgen::from_value(invoke("get_mod_list", json).await) {
-                    set_mod_list.set(mods);
+                if let Ok(mods) = serde_wasm_bindgen::from_value::<std::vec::Vec::<String>>(invoke("get_mod_list", json.clone()).await) {
+                    set_mod_list.set(mods.clone());
+                    for element in mods {
+                        if let Ok(serde_json::Value::Object(mod_obj)) = serde_json::from_str(&element) {
+                            if let Some(name) = mod_obj["Name"].as_str() {
+                                set_disabled.write().insert(name.to_string());
+                            }
+                        }
+                    }
+                 
+                    if let Ok(enabled_mods) = serde_wasm_bindgen::from_value::<std::vec::Vec::<String>>(invoke("get_enabled_mods_list", json).await) {
+                        for element in enabled_mods {
+                            set_disabled.write().remove(&element);
+                            set_enabled.write().insert(element);
+                        }
+                    }
                 }
             }
         }
@@ -126,24 +161,37 @@ pub fn Content() -> impl IntoView {
     view! {
         <div id="modlist">
             <div id="modlist_header">
-                <p> Name </p>
-                <p class="version"> Version </p>
-                <p> Author </p>
-                <p class="enabled"> Enabled </p>
+                <p class="mod_name"> Name </p>
+                <p class="mod_version"> Version </p>
+                <p class="mod_author"> Author </p>
+                <p class="mod_enabled"> Enabled </p>
             </div>
             {move || {
                 let mut out = Vec::new();
                 for element in mod_list.get() {
                     if let Ok(serde_json::Value::Object(mod_obj)) = serde_json::from_str(&element) {
                         if let (Some(name), Some(author), Some(version)) = (mod_obj["Name"].as_str(), mod_obj["Author"].as_str(), mod_obj["Version"].as_str()) {
-                            let id = name.to_string() + "_enabled";
+                            let id = name.to_string();
                             out.push(view! {
                                 <article>
-                                    <p> { name.to_string() } </p>
-                                    <p class="version"> v{ version.to_string() } </p>
-                                    <p> { author.to_string() } </p>
-                                    <div class="enabled">
-                                        <input type="checkbox" id={id}/>
+                                    <p class="mod_name"> { name.to_string() } </p>
+                                    <p class="mod_version"> v{ version.to_string() } </p>
+                                    <p class="mod_author"> { author.to_string() } </p>
+                                    <div class="mod_enabled">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={ enabled.get().contains(&id) }
+                                            on:click=move |_| {
+                                                if disabled.get_untracked().contains(&id){
+                                                    set_disabled.write().remove(&id);
+                                                    set_enabled.write().insert(id.clone());
+                                                }
+                                                else {
+                                                    set_disabled.write().insert(id.clone());
+                                                    set_enabled.write().remove(&id);
+                                                }
+                                            }
+                                        />
                                     </div>
                                 </article>
                             });
