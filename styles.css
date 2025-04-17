@@ -28,12 +28,6 @@ body {
     height: 99vh;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
 #titlebar {
     background-color: var(--background-semi);
     
@@ -69,11 +63,61 @@ body {
     }
 }
 
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+#modlist_header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 60%;
+    min-width: 475px;
+    padding: 8px 0px 8px 10px;
+
+    p:not(.enabled):not(.version) { 
+        margin: 0; 
+        width: 20%; 
+        min-width: 150px;
+    }
+}
+
 #modlist {
     color: var(--text);
-    height: 95%;
     overflow: auto;
     overflow-x: clip;
+    flex-grow: 1;
+    max-height: 95%;
+
+    article {
+        background-color: var(--background-quarter);
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: 2px 0px;
+        width: 60%;
+        min-width: 475px;
+        border-radius: 5px;
+        padding: 8px 0px 8px 10px;
+
+        p:not(.enabled):not(.version) { 
+            margin: 0; 
+            width: 20%; 
+            min-width: 150px;
+        }
+
+    }
+}
+
+.enabled, .version {
+    margin: 0; 
+    width: 10%;
+    min-width: 50px;
+    justify-content: center;
+    display: flex;
 }
 
 #launchbar {

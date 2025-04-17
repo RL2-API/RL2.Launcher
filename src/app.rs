@@ -125,18 +125,28 @@ pub fn Content() -> impl IntoView {
 
     view! {
         <div id="modlist">
+            <div id="modlist_header">
+                <p> Name </p>
+                <p class="version"> Version </p>
+                <p> Author </p>
+                <p class="enabled"> Enabled </p>
+            </div>
             {move || {
                 let mut out = Vec::new();
                 for element in mod_list.get() {
                     if let Ok(serde_json::Value::Object(mod_obj)) = serde_json::from_str(&element) {
-                        if let Some(name) = mod_obj["Name"].as_str() {
+                        if let (Some(name), Some(author), Some(version)) = (mod_obj["Name"].as_str(), mod_obj["Author"].as_str(), mod_obj["Version"].as_str()) {
                             let id = name.to_string() + "_enabled";
                             out.push(view! {
                                 <article>
-                                    {name.to_string()}
-                                    <input type="checkbox" id={id}/>
+                                    <p> { name.to_string() } </p>
+                                    <p class="version"> v{ version.to_string() } </p>
+                                    <p> { author.to_string() } </p>
+                                    <div class="enabled">
+                                        <input type="checkbox" id={id}/>
+                                    </div>
                                 </article>
-                            })
+                            });
                         }
                     }
                 }
