@@ -174,7 +174,7 @@ async fn update_modloader() {
                 let _ = stdin.write_all(b"tar -xzvf RL2.ModLoader.tar.gz -C rl2-ml\n");
                 let _ = stdin.write_all(b"start rl2-ml/RL2.ModLoader.Installer.exe\n");
                 let _ = stdin.write_all(b"del RL2.ModLoader.tar.gz\n");
-                let _ = stdin.write_all(b"del /q RL2.ModLoader\n");
+                let _ = stdin.write_all(b"del /q rl2-ml\n");
                 
                 let _ = process.wait_with_output();
             }
