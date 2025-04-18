@@ -1,5 +1,5 @@
 [package]
-name = "rl2-laucher"
+name = "rl2-launcher"
 version = "1.0.0"
 description = "A Rogue Legacy 2 launcher for Vanilla and RL2.ModLoader"
 authors = ["TacoConKvass (RL2.API Team)"]

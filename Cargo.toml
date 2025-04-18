@@ -1,5 +1,5 @@
 [package]
-name = "rl2-laucher-ui"
+name = "rl2-launcher-ui"
 version = "1.0.0"
 edition = "2021"
 
