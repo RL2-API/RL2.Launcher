@@ -174,28 +174,30 @@ pub fn Content() -> impl IntoView {
                     if let Ok(serde_json::Value::Object(mod_obj)) = serde_json::from_str(&element) {
                         if let (Some(name), Some(author), Some(version)) = (mod_obj["Name"].as_str(), mod_obj["Author"].as_str(), mod_obj["Version"].as_str()) {
                             let id = name.to_string();
+                            let id2 = name.to_string();
                             out.push(view! {
-                                <article>
+                                <button
+                                    on:click=move |_| {
+                                        if disabled.get_untracked().contains(&id2){
+                                            set_disabled.write().remove(&id2);
+                                            set_enabled.write().insert(id2.clone());
+                                        }
+                                        else {
+                                            set_disabled.write().insert(id2.clone());
+                                            set_enabled.write().remove(&id2);
+                                        }
+                                    }
+                                >
                                     <p class="mod_name"> { name.to_string() } </p>
                                     <p class="mod_version"> v{ version.to_string() } </p>
                                     <p class="mod_author"> { author.to_string() } </p>
-                                    <div class="mod_enabled">
+                                    <div class="mod_enabled" >
                                         <input 
                                             type="checkbox" 
                                             checked={ enabled.get().contains(&id) }
-                                            on:click=move |_| {
-                                                if disabled.get_untracked().contains(&id){
-                                                    set_disabled.write().remove(&id);
-                                                    set_enabled.write().insert(id.clone());
-                                                }
-                                                else {
-                                                    set_disabled.write().insert(id.clone());
-                                                    set_enabled.write().remove(&id);
-                                                }
-                                            }
                                         />
                                     </div>
-                                </article>
+                                </button>
                             });
                         }
                     }

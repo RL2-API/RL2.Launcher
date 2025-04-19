@@ -19,6 +19,8 @@ html {
     height: auto;
 
     padding: 0px;
+
+    overflow: hidden;
 }
 
 body {
@@ -45,6 +47,9 @@ body {
     justify-content: space-between;
     align-items: center;
 
+    height: 30px;
+    position: sticky;
+
     button {
         color: var(--text);
         background-color: transparent;
@@ -70,40 +75,41 @@ body {
 .container {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    justify-content: flex-end;
+    height: calc(100% - 50px);
 }
 
 #modlist_header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    width: 100%;
-    min-width: 475px;
+    min-width: 450px;
     padding: 8px 0px 8px 10px;
+    color: var(--text);
 
     p:not(.mod_enabled):not(.mod_version) { 
         margin: 0; 
         width: 20%; 
         min-width: 150px;
-        color: var(--text);
     }
 }
 
 #modlist {
-    color: var(--text);
+    display: flex;
+    flex-direction: column;
     overflow: auto;
     overflow-x: clip;
-    flex-grow: 1;
+    height: calc(100% - 45px);
 
-    article {
+    button {
         background-color: var(--background-quarter);
+        color: var(--text);
+        text-align: left;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         margin: 2px 0px;
-        width: 100%;
-        min-width: 475px;
+        min-width: 450px;
+        border-width: 0px;
         border-radius: 5px;
         padding: 8px 0px 8px 10px;
 
@@ -112,6 +118,10 @@ body {
             width: 20%; 
             min-width: 150px;
         }
+    }
+
+    button:hover {
+        background-color: var(--background-light);
     }
 }
 
@@ -123,6 +133,10 @@ body {
     display: flex;
 }
 
+.mod_enabled > input[type="checkbox"] {
+    accent-color: blue;
+}
+
 #launchbar {
     width: 100%;
     background-color: var(--background-semi);
@@ -130,6 +144,10 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: space-evenly;
+    height: 30px;
+    position: fixed;
+    top: calc(100% - 40px);
+    left: 0px;
 }
 
 #rl2_path {
