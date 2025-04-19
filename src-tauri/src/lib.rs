@@ -131,7 +131,7 @@ fn launch_epic() {
                 "/C",
                 "start", 
                 "",
-                "\"com.epicgames.launcher://apps/4966d5da285c4f2c876937844b0e23ee%3Af5d84259a95a4b11ade74a7e4e0bde66%3Abd35425c9548494082d002f36601ff45?action=launch&silent=true\""
+                "com.epicgames.launcher://apps/4966d5da285c4f2c876937844b0e23ee%3Af5d84259a95a4b11ade74a7e4e0bde66%3Abd35425c9548494082d002f36601ff45?action=launch&silent=true"
             ])
             .spawn();
     }

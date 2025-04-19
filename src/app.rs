@@ -100,8 +100,23 @@ pub fn Content() -> impl IntoView {
             if let Ok(json) = serde_wasm_bindgen::to_value(&PathArgs { path: v.to_string() }) { 
                 if invoke("check_if_correct_path", json.clone()).await == JsValue::TRUE {
                     set_rl2_path.set(v.to_string());
-                    if let Ok(mods) = serde_wasm_bindgen::from_value(invoke("get_mod_list", json).await) {
-                        set_mod_list.set(mods);
+                    if let Ok(mods) = serde_wasm_bindgen::from_value::<std::vec::Vec::<String>>(invoke("get_mod_list", json.clone()).await) {
+                        set_mod_list.set(mods.clone());
+                        
+                        for element in mods {
+                            if let Ok(serde_json::Value::Object(mod_obj)) = serde_json::from_str(&element) {
+                                if let Some(name) = mod_obj["Name"].as_str() {
+                                    set_disabled.write().insert(name.to_string());
+                                }
+                            }
+                        }
+                     
+                        if let Ok(enabled_mods) = serde_wasm_bindgen::from_value::<std::vec::Vec::<String>>(invoke("get_enabled_mods_list", json).await) {
+                            for element in enabled_mods {
+                                set_disabled.write().remove(&element);
+                                set_enabled.write().insert(element);
+                            }
+                        }
                     }
                 }
             }
