@@ -161,8 +161,6 @@ async fn update_modloader() {
         if let Ok(mut process) = std::process::Command::new("cmd")
             .current_dir("/")
             .stdin(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .stdout(std::process::Stdio::piped())
             .spawn() 
         {
             if let Some(stdin) = process.stdin
@@ -172,10 +170,12 @@ async fn update_modloader() {
                 let _ = stdin.write_all(b"curl -OL https://github.com/RL2-API/RL2.ModLoader/releases/latest/download/RL2.ModLoader.tar.gz\n");
                 let _ = stdin.write_all(b"mkdir rl2-ml\n");
                 let _ = stdin.write_all(b"tar -xzvf RL2.ModLoader.tar.gz -C rl2-ml\n");
-                let _ = stdin.write_all(b"start rl2-ml/RL2.ModLoader.Installer.exe\n");
+                let _ = stdin.write_all(b"cd rl2-ml\n");
+                let _ = stdin.write_all(b"RL2.ModLoader.Installer.exe\n");
+                let _ = stdin.write_all(b"cd ..\n");
                 let _ = stdin.write_all(b"del RL2.ModLoader.tar.gz\n");
-                let _ = stdin.write_all(b"del /q rl2-ml\n");
-                
+                let _ = stdin.write_all(b"del /q /s rl2-ml\n");
+                let _ = stdin.write_all(b"exit\n");
                 let _ = process.wait_with_output();
             }
         }
