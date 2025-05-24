@@ -156,31 +156,33 @@ async fn get_mod_list(path: String) -> std::vec::Vec::<String> {
 }
 
 #[tauri::command]
-async fn update_modloader() {
+async fn update_modloader(window: tauri::Window) {
     if cfg!(target_os = "windows") {
-        if let Ok(mut process) = std::process::Command::new("cmd")
-            .current_dir("/")
-            .stdin(std::process::Stdio::piped())
-            .spawn() 
-        {
-            if let Some(stdin) = process.stdin
-                .as_mut()
+        if let Ok(local) = window.path().local_data_dir() {
+            if let Ok(mut process) = std::process::Command::new("cmd")
+                .current_dir(local)
+                .stdin(std::process::Stdio::piped())
+                .spawn() 
             {
-
-                let _ = stdin.write_all(b"curl -OL https://github.com/RL2-API/RL2.ModLoader/releases/latest/download/RL2.ModLoader.tar.gz\n");
-                let _ = stdin.write_all(b"mkdir rl2-ml\n");
-                let _ = stdin.write_all(b"tar -xzvf RL2.ModLoader.tar.gz -C rl2-ml\n");
-                let _ = stdin.write_all(b"cd rl2-ml\n");
-                let _ = stdin.write_all(b"RL2.ModLoader.Installer.exe\n");
-                let _ = stdin.write_all(b"cd ..\n");
-                let _ = stdin.write_all(b"del RL2.ModLoader.tar.gz\n");
-                let _ = stdin.write_all(b"del /q /s rl2-ml\n");
-                let _ = stdin.write_all(b"exit\n");
-                let _ = process.wait_with_output();
+                if let Some(stdin) = process.stdin
+                    .as_mut()
+                {
+    
+                    let _ = stdin.write_all(b"curl -OL https://github.com/RL2-API/RL2.ModLoader/releases/latest/download/RL2.ModLoader.tar.gz\n");
+                    let _ = stdin.write_all(b"mkdir rl2-ml\n");
+                    let _ = stdin.write_all(b"tar -xzvf RL2.ModLoader.tar.gz -C rl2-ml\n");
+                    let _ = stdin.write_all(b"cd rl2-ml\n");
+                    let _ = stdin.write_all(b"RL2.ModLoader.Installer.exe\n");
+                    let _ = stdin.write_all(b"cd ..\n");
+                    let _ = stdin.write_all(b"del RL2.ModLoader.tar.gz\n");
+                    let _ = stdin.write_all(b"rmdir rl2-ml /q /s\n");
+                    let _ = stdin.write_all(b"exit\n");
+                    let _ = process.wait_with_output();
+                }
             }
-        }
-        else { 
-            return; 
+            else { 
+                return; 
+            }
         }
     }
 }
